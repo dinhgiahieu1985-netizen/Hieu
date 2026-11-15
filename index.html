@@ -33,9 +33,9 @@
         .header-btns { display: flex; gap: 6px; }
         .header-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
         
-        /* Tabs */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #cbd5e1; z-index: 100; height: 60px; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); cursor: pointer; border: none; background: none; font-weight: 600; padding: 2px; }
+        /* Tabs (6 items now) */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #cbd5e1; z-index: 100; height: 60px; overflow-x: auto; }
+        .nav-item { flex: 1; min-width: 55px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: var(--muted); cursor: pointer; border: none; background: none; font-weight: 600; padding: 2px; }
         .nav-item.active { color: var(--primary); border-top: 3px solid var(--primary); background: #eff6ff; }
         
         /* Container */
@@ -47,7 +47,7 @@
         .dashboard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
         .stat-card { background: white; padding: 10px; border-radius: 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
         .stat-title { font-size: 11px; color: var(--muted); font-weight: 600; }
-        .stat-value { font-size: 16px; font-weight: 800; color: var(--primary); margin-top: 2px; }
+        .stat-value { font-size: 15px; font-weight: 800; color: var(--primary); margin-top: 2px; }
 
         /* Room Grid */
         .room-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -89,7 +89,6 @@
         /* QR Scanner Box */
         #qr-reader-container { display: none; margin-bottom: 12px; background: #000; border-radius: 8px; overflow: hidden; padding: 8px; text-align: center; }
         #reader { width: 100%; border: none !important; }
-        #reader__dashboard { font-size: 13px; color: #fff; padding: 6px; }
         #reader video { width: 100% !important; border-radius: 6px; object-fit: cover; }
 
         /* Customer & History Cards */
@@ -115,10 +114,10 @@
 <header>
     <div>
         <h1>NHÀ NGHỈ HY HY <span style="font-size:10px; background:#eab308; color:#000; padding:2px 6px; border-radius:4px; vertical-align:middle;">PRO</span></h1>
-        <p>Quản lý phòng · Quét QR CCCD & Hóa đơn</p>
+        <p>Quản lý phòng · Thu Chi & Quét QR CCCD</p>
     </div>
     <div class="header-btns">
-        <button class="header-btn" onclick="switchTab('settings', document.querySelectorAll('.nav-item')[4])">⚙️ Cài đặt</button>
+        <button class="header-btn" onclick="switchTab('settings', document.querySelectorAll('.nav-item')[5])">⚙️ Cài đặt</button>
     </div>
 </header>
 
@@ -151,7 +150,50 @@
         </div>
     </div>
 
-    <!-- TAB 2: SỔ KHÁCH HÀNG & GHI CHÚ NỢ -->
+    <!-- TAB 2: NHẬP HÀNG & THU CHI -->
+    <div id="tab-inventory" class="tab-content">
+        <div style="background: white; padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 15px;">
+            <h3 style="margin-top:0; color:var(--primary);">Ghi Nhận Nhập Hàng / Chi Phí Mới</h3>
+            <div class="form-group">
+                <label>Tên mặt hàng / Khoản chi</label>
+                <input type="text" id="inv-item-name" placeholder="VD: Nhập thùng nước suối, Mì tôm, Tiền điện...">
+            </div>
+            <div class="form-group">
+                <label>Loại chi phí</label>
+                <select id="inv-item-category">
+                    <option value="Hàng bán (Nước, Mì...)">Hàng bán (Nước, Mì...)</option>
+                    <option value="Vật tư buồng phòng">Vật tư buồng phòng (Giấy, xà phòng...)</option>
+                    <option value="Chi phí vận hành (Điện, nước, wifi...)">Chi phí vận hành (Điện, nước, wifi...)</option>
+                    <option value="Sửa chữa / Khác">Sửa chữa / Khác</option>
+                </select>
+            </div>
+            <div class="btn-row">
+                <div class="form-group" style="flex:1;">
+                    <label>Số lượng</label>
+                    <input type="number" id="inv-item-qty" value="1" placeholder="1">
+                </div>
+                <div class="form-group" style="flex:2;">
+                    <label>Tổng tiền chi (VNĐ)</label>
+                    <input type="number" id="inv-item-cost" placeholder="VD: 150000">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Ghi chú (Nhà cung cấp, người giao...)</label>
+                <input type="text" id="inv-item-note" placeholder="Tùy chọn...">
+            </div>
+            <button class="btn btn-success" onclick="addInventoryRecord()">➕ Lưu Phiếu Nhập Hàng / Chi Phí</button>
+        </div>
+
+        <div style="background: white; padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="margin:0; font-size:15px; color:var(--primary);">Lịch Sử Nhập Hàng Gần Đây</h3>
+                <span id="total-inv-expense" style="font-size:13px; color:var(--danger); font-weight:bold;">Tổng chi: 0 đ</span>
+            </div>
+            <div id="inventory-list"></div>
+        </div>
+    </div>
+
+    <!-- TAB 3: SỔ KHÁCH HÀNG & GHI CHÚ NỢ -->
     <div id="tab-customers" class="tab-content">
         <div class="form-group">
             <input type="text" id="search-cust" placeholder="🔍 Tìm tên, số CCCD hoặc nội dung ghi chú/nợ..." onkeyup="renderCustomers()">
@@ -160,10 +202,10 @@
         <div id="customer-list" style="margin-top: 10px;"></div>
     </div>
 
-    <!-- TAB 3: THỐNG KÊ DOANH THU -->
+    <!-- TAB 4: THỐNG KÊ DOANH THU & LỢI NHUẬN -->
     <div id="tab-stats" class="tab-content">
         <div style="background: white; padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <h3 style="color:var(--primary); margin-top:0;">Báo Cáo Doanh Thu Pro</h3>
+            <h3 style="color:var(--primary); margin-top:0;">Báo Cáo Thu - Chi & Lợi Nhuận</h3>
             <div class="btn-row" style="margin-bottom:12px;">
                 <div class="form-group" style="flex:1; text-align:left;">
                     <label>Từ ngày</label>
@@ -174,24 +216,26 @@
                     <input type="date" id="stat-to" onchange="renderStatsReport()">
                 </div>
             </div>
-            <div style="background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:12px; font-size:14px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>Tổng số lượt khách:</span> <strong id="rep-total-visits">0</strong></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>Tổng tiền phòng & dịch vụ:</span> <strong id="rep-total-amount" style="color:var(--danger);">0 đ</strong></div>
+            <div style="background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:12px; font-size:14px; line-height:1.6;">
+                <div style="display:flex; justify-content:space-between;"><span>Tổng số lượt khách:</span> <strong id="rep-total-visits">0</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>Tổng doanh thu (Thu):</span> <strong id="rep-total-amount" style="color:var(--success);">0 đ</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>Tổng chi phí nhập hàng (Chi):</span> <strong id="rep-total-expense" style="color:var(--danger);">0 đ</strong></div>
+                <div style="display:flex; justify-content:space-between; border-top:1px solid #cbd5e1; margin-top:6px; padding-top:6px; font-size:16px;"><span>LỢI NHUẬN RÒNG:</span> <strong id="rep-net-profit" style="color:var(--primary);">0 đ</strong></div>
             </div>
-            <button class="btn btn-excel" onclick="exportToExcel()">📊 Tải Báo Cáo Excel Chi Tiết (.xlsx)</button>
+            <button class="btn btn-excel" onclick="exportToExcel()">📊 Tải Báo Cáo Excel Đầy Đủ (.xlsx)</button>
         </div>
     </div>
 
-    <!-- TAB 4: XUẤT EXCEL -->
+    <!-- TAB 5: XUẤT EXCEL -->
     <div id="tab-excel" class="tab-content">
         <div style="background: white; padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align:center;">
             <h3 style="color:var(--primary); margin-top:0;">Xuất Báo Cáo Excel</h3>
-            <p style="font-size:13px; color:var(--muted);">Tải toàn bộ dữ liệu Lịch sử doanh thu, Khách đang ở và Sổ ghi chú nợ ra file Excel chuẩn.</p>
+            <p style="font-size:13px; color:var(--muted);">Tải toàn bộ dữ liệu Lịch sử doanh thu, Phiếu nhập hàng, Khách đang ở và Sổ nợ ra file Excel chuẩn.</p>
             <button class="btn btn-excel" onclick="exportToExcel()">📊 Tải File Excel (.xlsx)</button>
         </div>
     </div>
 
-    <!-- TAB 5: CÀI ĐẶT PHÒNG, GIÁ & DỮ LIỆU -->
+    <!-- TAB 6: CÀI ĐẶT -->
     <div id="tab-settings" class="tab-content">
         <div style="background: white; padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 15px;">
             <h3 style="margin-top:0; color:var(--primary);">Quản Lý Danh Sách Phòng</h3>
@@ -241,9 +285,10 @@
     </div>
 </div>
 
-<!-- THANH ĐIỀU HƯỚNG DƯỚI CÙNG -->
+<!-- THANH ĐIỀU HƯỚNG DƯỚI CÙNG (6 TABS) -->
 <div class="nav-bar">
     <button class="nav-item active" onclick="switchTab('rooms', this)">🏨 Phòng</button>
+    <button class="nav-item" onclick="switchTab('inventory', this)">📦 Nhập hàng</button>
     <button class="nav-item" onclick="switchTab('customers', this)">📒 Sổ nợ</button>
     <button class="nav-item" onclick="switchTab('stats', this)">📈 Thống kê</button>
     <button class="nav-item" onclick="switchTab('excel', this)">📊 Excel</button>
@@ -258,7 +303,6 @@
             <button class="close-btn" onclick="closeModal('checkin-modal')">×</button>
         </div>
 
-        <!-- Khu vực quét QR -->
         <div class="btn-row">
             <button class="btn btn-primary" onclick="startCameraScan()">📷 Quét Camera CCCD</button>
             <button class="btn btn-warning" onclick="document.getElementById('qr-file-input').click()">🖼️ Chọn Ảnh QR</button>
@@ -266,7 +310,7 @@
         </div>
         <div id="qr-reader-container">
             <div id="reader"></div>
-            <p style="color:#fff; font-size:12px; margin:6px 0;">Đưa mã QR trên CCCD vào khung hình (cách 15-20cm)...</p>
+            <p style="color:#fff; font-size:12px; margin:6px 0;">Đưa mã QR trên CCCD vào khung hình...</p>
             <button class="btn btn-danger" style="margin-top:4px;" onclick="stopScanner()">Đóng Camera</button>
         </div>
 
@@ -318,7 +362,7 @@
     </div>
 </div>
 
-<!-- MODAL CHỈNH SỬA PHÒNG SAU KHI NHẬN PHÒNG -->
+<!-- MODAL CHỈNH SỬA PHÒNG -->
 <div id="edit-room-modal" class="modal">
     <div class="modal-box">
         <div class="modal-header">
@@ -348,7 +392,7 @@
     </div>
 </div>
 
-<!-- MODAL THANH TOÁN & THÊM KHÁCH PHÒNG ĐANG Ở -->
+<!-- MODAL THANH TOÁN -->
 <div id="checkout-modal" class="modal">
     <div class="modal-box">
         <div class="modal-header">
@@ -363,7 +407,6 @@
             <button class="btn btn-primary" style="margin-top:6px;" onclick="openAddMoreGuestModal()">+ Thêm khách vào phòng này</button>
         </div>
 
-        <!-- MỤC THÊM PHỤ THU / DỊCH VỤ -->
         <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
             <label style="font-weight:700; color:var(--primary); margin-bottom:6px;">🛒 Thêm phụ thu / dịch vụ (Nước ngọt, mì...):</label>
             <div class="btn-row">
@@ -392,7 +435,7 @@
     </div>
 </div>
 
-<!-- MODAL XEM HÓA ĐƠN MINI -->
+<!-- MODAL XEM HÓA ĐƠN -->
 <div id="invoice-modal" class="modal">
     <div class="modal-box">
         <div class="modal-header">
@@ -404,7 +447,7 @@
     </div>
 </div>
 
-<!-- MODAL SỬA / THÊM KHÁCH TRONG SỔ -->
+<!-- MODAL SỬA KHÁCH -->
 <div id="edit-cust-modal" class="modal">
     <div class="modal-box">
         <div class="modal-header">
@@ -447,11 +490,10 @@
         { id: 203, name: 'Phòng 203', type: 'Phòng VIP', status: 'empty', guests: [], extras: [], deposit: 0 }
     ];
 
-    let savedRooms = JSON.parse(localStorage.getItem('nn_pro_rooms'));
-    let rooms = savedRooms || defaultRooms;
-
+    let rooms = JSON.parse(localStorage.getItem('nn_pro_rooms')) || defaultRooms;
     let customers = JSON.parse(localStorage.getItem('nn_pro_customers')) || [];
     let historyLogs = JSON.parse(localStorage.getItem('nn_pro_history')) || [];
+    let inventoryLogs = JSON.parse(localStorage.getItem('nn_pro_inventory')) || [];
     let prices = JSON.parse(localStorage.getItem('nn_pro_prices')) || {
         firstHour: 60000,
         nextHour: 20000,
@@ -466,6 +508,7 @@
         localStorage.setItem('nn_pro_rooms', JSON.stringify(rooms));
         localStorage.setItem('nn_pro_customers', JSON.stringify(customers));
         localStorage.setItem('nn_pro_history', JSON.stringify(historyLogs));
+        localStorage.setItem('nn_pro_inventory', JSON.stringify(inventoryLogs));
         localStorage.setItem('nn_pro_prices', JSON.stringify(prices));
     }
 
@@ -475,6 +518,7 @@
         document.getElementById('tab-' + tabName).classList.add('active');
         if (el) el.classList.add('active');
         if (tabName === 'rooms') renderRooms();
+        if (tabName === 'inventory') renderInventory();
         if (tabName === 'customers') renderCustomers();
         if (tabName === 'stats') initStatsTab();
         if (tabName === 'settings') {
@@ -609,6 +653,77 @@
         renderRooms();
     }
 
+    // NHẬP HÀNG & QUẢN LÝ THU CHI
+    function addInventoryRecord() {
+        const name = document.getElementById('inv-item-name').value.trim();
+        const category = document.getElementById('inv-item-category').value;
+        const qty = parseInt(document.getElementById('inv-item-qty').value) || 1;
+        const cost = parseInt(document.getElementById('inv-item-cost').value) || 0;
+        const note = document.getElementById('inv-item-note').value.trim();
+
+        if (!name || cost <= 0) {
+            alert('Vui lòng nhập tên mặt hàng và số tiền chi hợp lệ!');
+            return;
+        }
+
+        inventoryLogs.unshift({
+            id: Date.now().toString(),
+            name,
+            category,
+            qty,
+            cost,
+            note,
+            time: Date.now()
+        });
+
+        document.getElementById('inv-item-name').value = '';
+        document.getElementById('inv-item-qty').value = '1';
+        document.getElementById('inv-item-cost').value = '';
+        document.getElementById('inv-item-note').value = '';
+
+        saveData();
+        renderInventory();
+        alert('✅ Đã lưu phiếu nhập hàng / chi phí thành công!');
+    }
+
+    function renderInventory() {
+        const container = document.getElementById('inventory-list');
+        const totalExpenseEl = document.getElementById('total-inv-expense');
+        
+        let totalCost = inventoryLogs.reduce((sum, x) => sum + x.cost, 0);
+        totalExpenseEl.innerText = `Tổng chi: ${formatMoney(totalCost)}`;
+
+        if (inventoryLogs.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:var(--muted); font-size:13px; margin:15px 0;">Chưa có phiếu nhập hàng hoặc khoản chi nào.</p>';
+            return;
+        }
+
+        let html = '';
+        inventoryLogs.forEach(item => {
+            html += `
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px;">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                        <span>📦 ${item.name} <small style="color:var(--muted);">(SL: ${item.qty})</small></span>
+                        <span style="color:var(--danger);">${formatMoney(item.cost)}</span>
+                    </div>
+                    <div style="color:var(--muted); font-size:11px; margin-top:2px;">Loại: ${item.category} | Thời gian: ${formatTime(item.time)}</div>
+                    ${item.note ? `<div style="margin-top:4px; color:#334155; font-style:italic;">Ghi chú: ${item.note}</div>` : ''}
+                    <div style="text-align:right; margin-top:4px;">
+                        <span style="color:var(--danger); cursor:pointer; font-size:11px; font-weight:bold;" onclick="deleteInventoryItem('${item.id}')">🗑️ Xóa phiếu này</span>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function deleteInventoryItem(id) {
+        if (!confirm('Bạn có chắc muốn xóa phiếu chi phí này?')) return;
+        inventoryLogs = inventoryLogs.filter(x => x.id !== id);
+        saveData();
+        renderInventory();
+    }
+
     function openCheckinModal(roomId) {
         currentRoomId = roomId;
         isAddingMoreGuest = false;
@@ -710,9 +825,8 @@
             return;
         }
 
-        const newId = Date.now();
         rooms.push({
-            id: newId,
+            id: Date.now(),
             name: name,
             type: type,
             status: 'empty',
@@ -779,7 +893,6 @@
         }
     }
 
-    // HÀM QUÉT CAMERA ĐÃ TỐI ƯU ĐỘ NHẠY CAO
     function startCameraScan() {
         const container = document.getElementById('qr-reader-container');
         container.style.display = 'block';
@@ -788,12 +901,7 @@
             html5QrCode = new Html5Qrcode("reader");
         }
 
-        // Tăng FPS và tối ưu kích thước khung quét để nhận diện CCCD siêu nhanh
-        const qrConfig = { 
-            fps: 25, 
-            qrbox: { width: 300, height: 200 },
-            aspectRatio: 1.0
-        };
+        const qrConfig = { fps: 25, qrbox: { width: 300, height: 200 }, aspectRatio: 1.0 };
 
         html5QrCode.start(
             { facingMode: "environment" }, 
@@ -1217,18 +1325,32 @@
         const fromVal = document.getElementById('stat-from').value;
         const toVal = document.getElementById('stat-to').value;
 
-        const filtered = historyLogs.filter(item => {
+        const filteredRevenue = historyLogs.filter(item => {
             const itemDate = getLocalDateISO(item.checkOutTime);
             if (fromVal && itemDate < fromVal) return false;
             if (toVal && itemDate > toVal) return false;
             return true;
         });
 
-        const totalVisits = filtered.length;
-        const totalAmount = filtered.reduce((sum, x) => sum + (x.amount || 0), 0);
+        const filteredExpense = inventoryLogs.filter(item => {
+            const itemDate = getLocalDateISO(item.time);
+            if (fromVal && itemDate < fromVal) return false;
+            if (toVal && itemDate > toVal) return false;
+            return true;
+        });
+
+        const totalVisits = filteredRevenue.length;
+        const totalAmount = filteredRevenue.reduce((sum, x) => sum + (x.amount || 0), 0);
+        const totalExpense = filteredExpense.reduce((sum, x) => sum + (x.cost || 0), 0);
+        const netProfit = totalAmount - totalExpense;
 
         document.getElementById('rep-total-visits').innerText = totalVisits;
         document.getElementById('rep-total-amount').innerText = formatMoney(totalAmount);
+        document.getElementById('rep-total-expense').innerText = formatMoney(totalExpense);
+        
+        const netProfitEl = document.getElementById('rep-net-profit');
+        netProfitEl.innerText = formatMoney(netProfit);
+        netProfitEl.style.color = netProfit >= 0 ? 'var(--primary)' : 'var(--danger)';
     }
 
     function exportToExcel() {
@@ -1238,6 +1360,8 @@
         }
 
         const wb = XLSX.utils.book_new();
+        
+        // Sheet 1: Lịch sử doanh thu
         const historyRows = historyLogs.map((h, idx) => ({
             'STT': idx + 1,
             'Phòng': h.roomName,
@@ -1253,16 +1377,32 @@
             'Thành tiền (VNĐ)': h.amount || 0,
             'Ghi chú': h.note || ''
         }));
-
         const totalRevenue = historyLogs.reduce((sum, x) => sum + (x.amount || 0), 0);
         historyRows.push({
-            'STT': '', 'Phòng': 'TỔNG CỘNG', 'Họ và Tên': `${historyLogs.length} lượt`,
+            'STT': '', 'Phòng': 'TỔNG DOANH THU', 'Họ và Tên': `${historyLogs.length} lượt`,
             'Số CCCD': '', 'Số khách': '', 'Địa chỉ': '', 'Biển số xe': '',
             'Hình thức': '', 'Đã cọc': '', 'Giờ vào': '', 'Giờ ra': '', 'Thành tiền (VNĐ)': totalRevenue, 'Ghi chú': ''
         });
-
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(historyRows), 'LichSu_DoanhThu');
 
+        // Sheet 2: Nhập hàng & Chi phí
+        const invRows = inventoryLogs.map((i, idx) => ({
+            'STT': idx + 1,
+            'Tên mặt hàng / Khoản chi': i.name,
+            'Loại chi phí': i.category,
+            'Số lượng': i.qty,
+            'Tổng tiền chi (VNĐ)': i.cost,
+            'Ghi chú': i.note || '',
+            'Thời gian chi': formatTime(i.time)
+        }));
+        const totalExpense = inventoryLogs.reduce((sum, x) => sum + x.cost, 0);
+        invRows.push({
+            'STT': '', 'Tên mặt hàng / Khoản chi': 'TỔNG CHI PHÍ', 'Loại chi phí': '',
+            'Số lượng': '', 'Tổng tiền chi (VNĐ)': totalExpense, 'Ghi chú': '', 'Thời gian chi': ''
+        });
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(invRows), 'NhapHang_ThuChi');
+
+        // Sheet 3: Sổ khách hàng & Nợ
         const custRows = customers.map((c, idx) => ({
             'STT': idx + 1,
             'Họ và Tên': c.name,
@@ -1292,7 +1432,7 @@
     }
 
     function exportData() {
-        const dataStr = JSON.stringify({ rooms, customers, historyLogs, prices });
+        const dataStr = JSON.stringify({ rooms, customers, historyLogs, inventoryLogs, prices });
         const blob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1311,6 +1451,7 @@
                 if (parsed.rooms) rooms = parsed.rooms;
                 if (parsed.customers) customers = parsed.customers;
                 if (parsed.historyLogs) historyLogs = parsed.historyLogs;
+                if (parsed.inventoryLogs) inventoryLogs = parsed.inventoryLogs;
                 if (parsed.prices) prices = parsed.prices;
                 saveData();
                 renderRooms();
