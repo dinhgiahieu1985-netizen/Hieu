@@ -88,8 +88,10 @@
 
         /* QR Scanner Box */
         #qr-reader-container { display: none; margin-bottom: 12px; background: #000; border-radius: 8px; overflow: hidden; padding: 8px; text-align: center; }
-        #reader { width: 100%; }
-        #reader video { width: 100% !important; border-radius: 6px; }
+        #reader { width: 100%; border: none !important; }
+        #reader__dashboard { font-size: 13px; color: #fff; padding: 6px; }
+        #reader__dashboard_section_csr button { background: var(--primary-light); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        #reader video { width: 100% !important; border-radius: 6px; object-fit: cover; }
 
         /* Customer & History Cards */
         .cust-card { background: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 4px solid var(--primary-light); cursor: pointer; }
@@ -759,7 +761,7 @@
             checkExistingGuest(parts[0]);
             alert('✅ Quét và điền thông tin CCCD thành công!');
         } else {
-            alert('⚠️ Mã QR không đúng định dạng CCCD gắn chip.');
+            alert('⚠️ Mã QR trên căn cước không đúng định dạng chuẩn.');
         }
     }
 
@@ -779,27 +781,45 @@
         }
     }
 
+    // SỬA HÀM QUÉT CAMERA ĐỂ NHẬN DIỆN MÃ QR NHẠY HƠN
     function startCameraScan() {
-        document.getElementById('qr-reader-container').style.display = 'block';
+        const container = document.getElementById('qr-reader-container');
+        container.style.display = 'block';
+
         if (!html5QrCode) {
             html5QrCode = new Html5Qrcode("reader");
         }
-        const config = { fps: 15, qrbox: { width: 250, height: 250 } };
+
+        const qrConfig = { 
+            fps: 10, 
+            qrbox: { width: 280, height: 180 },
+            aspectRatio: 1.0
+        };
+
+        // Thử bật camera sau trước (environment)
         html5QrCode.start(
-            { facingMode: "environment" },
-            config,
+            { facingMode: "environment" }, 
+            qrConfig,
             (decodedText) => {
                 stopScanner();
                 parseCCCD(decodedText);
             },
-            (errorMessage) => {}
+            (errorMessage) => {
+                // Bỏ qua lỗi quét liên tục từng khung hình chưa thấy QR
+            }
         ).catch(err => {
-            html5QrCode.start({ facingMode: "user" }, config, (decodedText) => {
-                stopScanner();
-                parseCCCD(decodedText);
-            }, (err2) => {
-                alert("Không thể mở camera. Vui lòng dùng nút 'Chọn Ảnh QR'.");
-                document.getElementById('qr-reader-container').style.display = 'none';
+            // Nếu không mở được camera sau, thử dùng camera bất kỳ có sẵn
+            html5QrCode.start(
+                { facingMode: "user" }, 
+                qrConfig,
+                (decodedText) => {
+                    stopScanner();
+                    parseCCCD(decodedText);
+                },
+                (err2) => {}
+            ).catch(err3 => {
+                alert("❌ Không thể truy cập camera. Vui lòng cấp quyền camera cho trình duyệt hoặc dùng nút 'Chọn Ảnh QR'.");
+                container.style.display = 'none';
             });
         });
     }
@@ -819,13 +839,17 @@
     function scanFromFile(event) {
         if (event.target.files.length === 0) return;
         const imageFile = event.target.files[0];
+        
+        // Tạo instance riêng để scan ảnh tải lên
         const fileScanner = new Html5Qrcode("reader");
         fileScanner.scanFile(imageFile, true)
             .then(decodedText => {
+                fileScanner.clear();
                 parseCCCD(decodedText);
             })
             .catch(err => {
-                alert("❌ Không tìm thấy mã QR trong ảnh này.");
+                fileScanner.clear();
+                alert("❌ Không tìm thấy mã QR trong ảnh này. Hãy thử chụp rõ góc mã QR trên CCCD.");
             });
         event.target.value = '';
     }
