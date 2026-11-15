@@ -90,7 +90,6 @@
         #qr-reader-container { display: none; margin-bottom: 12px; background: #000; border-radius: 8px; overflow: hidden; padding: 8px; text-align: center; }
         #reader { width: 100%; border: none !important; }
         #reader__dashboard { font-size: 13px; color: #fff; padding: 6px; }
-        #reader__dashboard_section_csr button { background: var(--primary-light); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
         #reader video { width: 100% !important; border-radius: 6px; object-fit: cover; }
 
         /* Customer & History Cards */
@@ -267,7 +266,7 @@
         </div>
         <div id="qr-reader-container">
             <div id="reader"></div>
-            <p style="color:#fff; font-size:12px; margin:6px 0;">Đưa mã QR trên CCCD vào khung hình...</p>
+            <p style="color:#fff; font-size:12px; margin:6px 0;">Đưa mã QR trên CCCD vào khung hình (cách 15-20cm)...</p>
             <button class="btn btn-danger" style="margin-top:4px;" onclick="stopScanner()">Đóng Camera</button>
         </div>
 
@@ -685,7 +684,6 @@
         alert('✅ Đã cập nhật thông tin phòng thành công!');
     }
 
-    // QUẢN LÝ THÊM BỚT PHÒNG TRONG CÀI ĐẶT
     function renderSettingsRooms() {
         const container = document.getElementById('settings-room-list');
         if (!container) return;
@@ -781,7 +779,7 @@
         }
     }
 
-    // SỬA HÀM QUÉT CAMERA ĐỂ NHẬN DIỆN MÃ QR NHẠY HƠN
+    // HÀM QUÉT CAMERA ĐÃ TỐI ƯU ĐỘ NHẠY CAO
     function startCameraScan() {
         const container = document.getElementById('qr-reader-container');
         container.style.display = 'block';
@@ -790,13 +788,13 @@
             html5QrCode = new Html5Qrcode("reader");
         }
 
+        // Tăng FPS và tối ưu kích thước khung quét để nhận diện CCCD siêu nhanh
         const qrConfig = { 
-            fps: 10, 
-            qrbox: { width: 280, height: 180 },
+            fps: 25, 
+            qrbox: { width: 300, height: 200 },
             aspectRatio: 1.0
         };
 
-        // Thử bật camera sau trước (environment)
         html5QrCode.start(
             { facingMode: "environment" }, 
             qrConfig,
@@ -804,11 +802,8 @@
                 stopScanner();
                 parseCCCD(decodedText);
             },
-            (errorMessage) => {
-                // Bỏ qua lỗi quét liên tục từng khung hình chưa thấy QR
-            }
+            (errorMessage) => {}
         ).catch(err => {
-            // Nếu không mở được camera sau, thử dùng camera bất kỳ có sẵn
             html5QrCode.start(
                 { facingMode: "user" }, 
                 qrConfig,
@@ -818,7 +813,7 @@
                 },
                 (err2) => {}
             ).catch(err3 => {
-                alert("❌ Không thể truy cập camera. Vui lòng cấp quyền camera cho trình duyệt hoặc dùng nút 'Chọn Ảnh QR'.");
+                alert("❌ Không thể mở camera. Vui lòng cấp quyền camera cho trình duyệt.");
                 container.style.display = 'none';
             });
         });
@@ -839,8 +834,6 @@
     function scanFromFile(event) {
         if (event.target.files.length === 0) return;
         const imageFile = event.target.files[0];
-        
-        // Tạo instance riêng để scan ảnh tải lên
         const fileScanner = new Html5Qrcode("reader");
         fileScanner.scanFile(imageFile, true)
             .then(decodedText => {
@@ -849,7 +842,7 @@
             })
             .catch(err => {
                 fileScanner.clear();
-                alert("❌ Không tìm thấy mã QR trong ảnh này. Hãy thử chụp rõ góc mã QR trên CCCD.");
+                alert("❌ Không tìm thấy mã QR trong ảnh này.");
             });
         event.target.value = '';
     }
@@ -1126,7 +1119,6 @@
         renderRooms();
     }
 
-    // SỔ KHÁCH HÀNG & GHI CHÚ
     function renderCustomers() {
         const keyword = document.getElementById('search-cust').value.toLowerCase();
         const container = document.getElementById('customer-list');
@@ -1214,7 +1206,6 @@
         renderCustomers();
     }
 
-    // THỐNG KÊ TAB
     function initStatsTab() {
         const today = getLocalDateISO(Date.now());
         if (!document.getElementById('stat-from').value) document.getElementById('stat-from').value = today;
@@ -1240,7 +1231,6 @@
         document.getElementById('rep-total-amount').innerText = formatMoney(totalAmount);
     }
 
-    // XUẤT EXCEL
     function exportToExcel() {
         if (typeof XLSX === 'undefined') {
             alert('❌ Chưa tải được thư viện xuất Excel.');
